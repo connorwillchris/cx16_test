@@ -9,13 +9,10 @@
     tape:               .res    256
 
     program_test:
-        .byte   ">++++++++[<+++++++++>-]<."
+        .byte   ">++++++++[<+++++++++>-]<."             ; outputs HELLO
         .byte   "---."
         .byte   "+++++++.."
         .byte   "+++."
-
-        .byte   ">+++++++++[<--------->-]<++."
-
         .byte   $00
 
 .segment "CODE"
