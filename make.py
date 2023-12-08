@@ -1,7 +1,7 @@
 import os
 import sys
 
-in_file = "src/brainfuck.s"
+in_file = "src/brainfuck/brainfuck.s"
 out_file = "build/BRAINFUCK.PRG"
 name = "brainfuck"
 

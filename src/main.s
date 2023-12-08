@@ -1,3 +1,6 @@
+.include "include/cx16.inc"
+.include "include/cbm_kernal.inc"
+
 .segment "STARTUP"
 .segment "INIT"
 .segment "ONCE"
@@ -6,9 +9,6 @@
 .segment "DATA"
     hello_world:    .byte "hello world!", $00
 .segment "CODE"
-
-.include "include/cx16.inc"
-.include "include/cbm_kernal.inc"
 
 start:
     lda     #<hello_world

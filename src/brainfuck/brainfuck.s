@@ -1,45 +1,55 @@
-.include "include/cx16.inc"
-.include "include/cbm_kernal.inc"
+.include "../include/cx16.inc"
+.include "../include/cbm_kernal.inc"
 
-.macpack longbranch
-
-.segment "STARTUP"
-.segment "INIT"
-.segment "ONCE"
 .segment "ZEROPAGE"
-    program_counter:    .res    2                       ; address of the program
-    tape_ptr:           .byte   0
     bracket_count:      .res    1
-
+    tape_ptr:           .res    1
+    program_counter:    .res    2
 .segment "DATA"
-    temporary_prg_1:                                    ; output the NEWLINE character '\n' (#$0D)
-        .byte "+++++++++++++..", 0
-    temporary_prg_2:                                    ; outputs the letter 'A'
-        .byte ">++++++++[<++++++++>-]<+...", 0
     tape:               .res    256
+
+    program_test:
+        .byte   ">++++++++[<+++++++++>-]<."
+        .byte   "---."
+        .byte   "+++++++.."
+        .byte   "+++."
+
+        .byte   ">+++++++++[<--------->-]<++."
+
+        .byte   $00
 
 .segment "CODE"
 
+;-------------------------------------------------
+;   MAIN ENTRY POINT
+;-------------------------------------------------
 start:
-    lda     #<temporary_prg_2
+    lda     #<program_test
     sta     program_counter
-    lda     #>temporary_prg_2
+    lda     #>program_test
     sta     program_counter + 1
 
-    jsr     brainfuck                                   ; execute the brainfuck program
-    rts                                                 ; exit the program
+    jsr     brainfuck
+    rts
 
 ;-------------------------------------------------
 ;   INTERPRETER
 ;-------------------------------------------------
-brainfuck:
-    jmp     :+
+brainfuck:                                              ; initialize all the tape cells and tape_ptr to zero
+    stz     tape_ptr
+    ldx     #0
+@init:
+    stz     tape, x
+    inx
+    bne     @init
+
+    jmp     :+                                          ; jump to the loop without incrementing the program counter
 ;-------------------------------------------------
 ;   COMPARISONS
 ;-------------------------------------------------
 loop:
-    jsr     increment_pc
-:                                                       ; go once without increment
+    jsr     increment_pc                                ; increment the program counter (except on turn one)
+:
     lda     (program_counter)
 
     cmp     #'>'
@@ -59,8 +69,8 @@ loop:
     cmp     #']'
     beq     t_bracket_R
 
-    cmp     #0
-    bne     loop                                        ; go back to increment_pc if we are not at the NULL character
+    cmp     #0                                          ; go back to loop if we are not at the NULL character
+    bne     loop
 
     rts                                                 ; exit the brainfuck program
 ;-------------------------------------------------
@@ -120,10 +130,10 @@ t_bracket_L:                                            ; TODO
 t_bracket_R:
     ldx     tape_ptr
     lda     tape, x
-    cmp     #0
+    cmp     #0                                          ; jump to the end of the loop
     beq     @end
     lda     bracket_count
-    cmp     #1
+    cmp     #1                                          ; if it's less than 1, go to the end
     bcs     @loop
 @loop:
     jsr     decrement_pc
@@ -140,36 +150,35 @@ t_bracket_R:
 ;   INCREMENT AND DECREMENT PC
 ;-------------------------------------------------
 increment_pc:
-    clc
-    lda     program_counter                             ; increment the lower byte
-    adc     #1
-    sta     program_counter
-    lda     program_counter+1                           ; add 0 to the upper byte, which adds the carry bit
-    adc     #0
-    sta     program_counter+1
+    inc     program_counter
+    bne     :+
+    inc     program_counter + 1
+:
     rts
+
 
 decrement_pc:
-    sec     
     lda     program_counter
-    sbc     #1
-    sta     program_counter
-    lda     program_counter+1
-    sbc     #0
-    sta     program_counter+1
+    bne     :+
+    dec     program_counter + 1
+:
+    dec     program_counter
     rts
 
-;   FOR LEFT BRACKET
-;   int a = 1;
-;   while (a > 1) {
-;       pc++;
-;       if (*pc == '[') a++;
-;       if (*pc == ']') a--;
-;   }
-
-;   FOR RIGHT BRACKET
-;   while (a > 1) {
-;       pc--;
-;       if (*pc == '[') a--;
-;       if (*pc == ']') a++;
-;   }
+;-------------------------------------------------
+;   INITIALIZE MEMORY TO ZERO
+;-------------------------------------------------
+;   TAPE_SIZE = 256
+;...
+;   tape:               .res    TAPE_SIZE
+;...
+;   lda #<tape
+;   sta gREG::r0L
+;   lda #>tape
+;   sta gREG::r0H
+;   lda #<TAPE_SIZE
+;   sta gREG::r1L
+;   lda #>TAPE_SIZE
+;   sta gREG::r1H
+;   lda #$00
+;   jsr MEMORY_FILL
