@@ -1,5 +1,5 @@
-.include "include/cx16.inc"
-.include "include/cbm_kernal.inc"
+.include "../include/cx16.inc"
+.include "../include/cbm_kernal.inc"
 
 .segment "ZEROPAGE"
     bracket_count:      .res    1
@@ -7,22 +7,12 @@
     program_counter:    .res    2
 .segment "DATA"
     tape:               .res    256
-    program_test:                                       ; outputs HELLO to the console
-        .byte   ">++++++++[<+++++++++>-]<.---.+++++++..+++.", $00
-
-.segment "CODE"
-
-;-------------------------------------------------
-;   MAIN ENTRY POINT
-;-------------------------------------------------
-start:
-    lda     #<program_test
-    sta     program_counter
-    lda     #>program_test
-    sta     program_counter + 1
-
-    jsr     brainfuck
-    rts
+    program_test:
+        .byte   ">++++++++[<+++++++++>-]<."
+        .byte   "---."
+        .byte   "+++++++.."
+        .byte   "+++."
+        .byte   $00
 
 ;-------------------------------------------------
 ;   INTERPRETER
