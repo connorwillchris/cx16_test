@@ -1,19 +1,8 @@
 .include "../include/cx16.inc"
 .include "../include/cbm_kernal.inc"
+.include "./data.inc"
 
-.segment "ZEROPAGE"
-    bracket_count:      .res    1
-    tape_ptr:           .res    1
-    program_counter:    .res    2
-.segment "DATA"
-    tape:               .res    256
-    program_test:
-        .byte   ">++++++++[<+++++++++>-]<."
-        .byte   "---."
-        .byte   "+++++++.."
-        .byte   "+++."
-        .byte   $00
-
+.segment "CODE"
 ;-------------------------------------------------
 ;   INTERPRETER
 ;-------------------------------------------------
@@ -79,7 +68,7 @@ t_plus:
 
 t_minus:
     ldx     tape_ptr
-    lda     tape, X
+    lda     tape, x
     dec
     sta     tape, x
     jmp     loop

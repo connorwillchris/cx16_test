@@ -5,10 +5,18 @@
 ;   MAIN ENTRY POINT
 ;-------------------------------------------------
 start:
-    lda     #<program_test
-    sta     program_counter
-    lda     #>program_test
-    sta     program_counter + 1
+program:
+    jsr     print_str
+    rts                                             ; END PROGRAM
 
-    jsr     brainfuck
+print_str:
+    ldy     #0
+@loop:
+    lda     print_buffer, y
+    beq     @end
+    jsr     CHROUT
+	
+    iny
+    bra     @loop
+@end:
     rts
